@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>League Table</title>
+    <style>
+        table {
+            width: 50%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            font-size: 18px;
+            text-align: left;
+        }
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            outline: none;
+            color: #fff;
+            background-color: #4CAF50;
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 9px #999;
+            margin-right: 10px;
+        }
+        .button:hover {background-color: #3e8e41}
+        .button:active {
+            background-color: #3e8e41;
+            box-shadow: 0 5px #666;
+            transform: translateY(4px);
+        }
+    </style>
+    <script>
+        // F5 tuşunu ve sayfanın yenilenmesini engelleyen JavaScript kodu
+        document.addEventListener("keydown", function(e) {
+            if ((e.which || e.keyCode) === 116 || (e.ctrlKey && (e.which === 82 || e.keyCode === 82))) {
+                e.preventDefault();
+            }
+        });
+    </script>
+</head>
+<body>
+    <h1>League Table - Week {{.Week}}</h1>
+    <table>
+        <tr>
+            <th>Teams</th>
+            <th>Played</th>
+            <th>PTS</th>
+            <th>W</th>
+            <th>D</th>
+            <th>L</th>
+            <th>GF</th>
+            <th>GA</th>
+            <th>GD</th>
+        </tr>
+        {{range .Teams}}
+        <tr>
+            <td>{{.Name}}</td>
+            <td>{{.Played}}</td>
+            <td>{{.Points}}</td>
+            <td>{{.Wins}}</td>
+            <td>{{.Draws}}</td>
+            <td>{{.Losses}}</td>
+            <td>{{.GoalsFor}}</td>
+            <td>{{.GoalsAgainst}}</td>
+            <td>{{subtract .GoalsFor .GoalsAgainst}}</td>
+        </tr>
+        {{end}}
+    </table>
+
+    {{if eq .Week 0}}
+    <h1>Season has not started yet. Click "Next Week" to begin the league.</h1>
+    {{else if not .PlayAll}}
+    <h1>Match Results - Week {{.Week}}</h1>
+    <table>
+        <tr>
+            <th>Home Team</th>
+            <th>Away Team</th>
+            <th>Score</th>
+        </tr>
+        {{range .Matches}}
+        <tr>
+            <td>{{.HomeTeam.Name}}</td>
+            <td>{{.AwayTeam.Name}}</td>
+            <td>{{.HomeGoals}} - {{.AwayGoals}}</td>
+        </tr>
+        {{end}}
+    </table>
+    {{else}}
+    <h1>All Match Results</h1>
+    {{range $week, $matches := .GroupedMatches}}
+    <h2>Week {{$week}}</h2>
+    <table>
+        <tr>
+            <th>Home Team</th>
+            <th>Away Team</th>
+            <th>Score</th>
+        </tr>
+        {{range $matches}}
+        <tr>
+            <td>{{.HomeTeam.Name}}</td>
+            <td>{{.AwayTeam.Name}}</td>
+            <td>{{.HomeGoals}} - {{.AwayGoals}}</td>
+        </tr>
+        {{end}}
+    </table>
+    {{end}}
+    {{end}}
+
+    {{if ge .Week 4}}
+    <h1>{{.Week}}<sup>th</sup> Week Predictions of Championship</h1>
+    <table>
+        <tr>
+            <th>Team</th>
+            <th>Championship Probability</th>
+        </tr>
+        {{range $team, $prob := .ChampionshipPredictions}}
+        <tr>
+            <td>{{$team}}</td>
+            <td>{{if eq $prob 0.0}}-{{else}}{{printf "%.2f%%" $prob}}{{end}}</td>
+        </tr>
+        {{end}}
+    </table>
+    {{end}}
+
+    {{if .LeagueEnded}}
+    <h1>League has ended. Thank you for playing!</h1>
+    {{end}}
+
+    {{if not .LeagueEnded}}
+    <div>
+        <a class="button" href="/?week={{.Week}}&playall=true">Play All</a>
+        {{if lt .Week 6}}
+        <a class="button" href="/?week={{add .Week 1}}">Next Week</a>
+        {{end}}
+    </div>
+    {{end}}
+</body>
+</html>
